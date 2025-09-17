@@ -16,6 +16,42 @@ namespace AgendaPro.Controllers
             _db = db;
         }
 
+        // POST: api/fornecedor/novo
+        [HttpPost("novo")]
+        public IActionResult Criar([FromBody] Fornecedor fornecedor)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
+                var servicos = fornecedor.Servicos?.ToList() ?? new List<Servico>(); 
+                fornecedor.Servicos = null; 
+                _db.Fornecedores.Add(fornecedor);
+                _db.SaveChanges();
+
+
+                foreach (var s in servicos)
+                {
+                    var servico = new Servico
+                    {
+                        FornecedorId = fornecedor.Id,
+                        Nome = s.Nome,
+                        Preco = s.Preco,
+                    };
+                    _db.Servicos.Add(servico);
+                }
+
+                _db.SaveChanges();
+
+                return CreatedAtAction(nameof(GetPorId), new { id = fornecedor.Id }, fornecedor);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao criar fornecedor: {ex.Message}");
+            }
+        }
+
+
         // GET: api/fornecedor/lista
         [HttpGet("lista")]
         public IActionResult GetTodos()
@@ -31,7 +67,15 @@ namespace AgendaPro.Controllers
                         f.CNPJ,
                         f.Telefone,
                         f.Email,
-                        Servicos = _db.Servicos.Where(s => s.FornecedorId == f.Id && s.Ativo).ToList()
+                        Servicos = _db.Servicos.Where(s => s.FornecedorId == f.Id && s.Ativo)
+                        .Select(s => new
+                        {
+                            s.Id,
+                            s.Nome,
+                            s.Preco
+                        })
+                        .ToList()
+
                     })
                     .ToList();
 
@@ -62,40 +106,6 @@ namespace AgendaPro.Controllers
             }
         }
 
-        // POST: api/fornecedor/novo
-        [HttpPost("novo")]
-        public IActionResult Criar([FromBody] Fornecedor fornecedor)
-        {
-            try
-            {
-                if (!ModelState.IsValid) return BadRequest(ModelState);
-
-                fornecedor.Ativo = true;
-                _db.Fornecedores.Add(fornecedor);
-                _db.SaveChanges();
-
-                if (fornecedor.Servicos != null)
-                {
-                    foreach (var servico in fornecedor.Servicos)
-                    {
-                        servico.FornecedorId = fornecedor.Id;
-                        servico.Ativo = true;
-                        _db.Servicos.Add(servico);
-                    }
-                    _db.SaveChanges();
-                }
-
-                return CreatedAtAction(nameof(GetPorId), new { id = fornecedor.Id }, fornecedor);
-            }
-            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
-            {
-                return Conflict("Fornecedor já cadastrado (CNPJ duplicado).");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Erro ao criar fornecedor: {ex.Message}");
-            }
-        }
 
         // PUT: api/fornecedor/atualiza/{id}
         [HttpPut("atualiza/{id}")]
