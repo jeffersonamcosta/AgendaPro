@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace AgendaPro.Models
 {
@@ -10,14 +11,10 @@ namespace AgendaPro.Models
         [Required]
         public int FornecedorId { get; set; }
 
-        [ForeignKey("FornecedorId")]
-        public Fornecedor Fornecedor { get; set; } = null!;
-
         [Required, StringLength(200)]
         public string Nome { get; set; } = null!;
 
-        [Required]
-        public decimal Preco { get; set; }
+        public decimal Preco { get; set; } = 0;
 
         public bool Ativo { get; set; } = true;
     }

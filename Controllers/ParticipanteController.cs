@@ -22,7 +22,7 @@ namespace AgendaPro.Controllers
         {
             try
             {
-                var Participante = _db.Participante.Where(p => p.Ativo).ToList();
+                var Participante = _db.Participante.ToList();
                 return Ok(Participante);
             }
             catch (Exception ex)
@@ -38,8 +38,6 @@ namespace AgendaPro.Controllers
             try
             {
                 var participante = _db.Participante.Find(id);
-                if (participante == null || !participante.Ativo)
-                    return NotFound("Participante não encontrado ou inativo.");
 
                 return Ok(participante);
             }
