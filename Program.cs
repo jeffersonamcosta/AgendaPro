@@ -9,8 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// controllers (API)
-builder.Services.AddControllers();
+// Controllers (API) + MVC
+builder.Services.AddControllersWithViews(); // Permite controllers com views
+builder.Services.AddControllers(); // Mantém suporte à API
 
 // JWT config
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -23,7 +24,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // true em produção
+    options.RequireHttpsMetadata = true;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -41,9 +42,26 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Middleware
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles(); // Permite servir arquivos estáticos (css, js, imagens)
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+
+// Roteamento
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"); // Página padrão MVC
+
+app.MapControllers(); // Mantém suporte às APIs
 
 app.Run();
+
