@@ -25,7 +25,7 @@ namespace AgendaPro.Controllers
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
                 var servicos = fornecedor.Servicos?.ToList() ?? new List<Servico>(); 
-                fornecedor.Servicos = null; 
+                fornecedor.Servicos = new List<Servico>(); 
                 _db.Fornecedores.Add(fornecedor);
                 _db.SaveChanges();
 

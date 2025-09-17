@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\FornecedorEvento.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ContainerPort Include="8081" />
   </ItemGroup>
 

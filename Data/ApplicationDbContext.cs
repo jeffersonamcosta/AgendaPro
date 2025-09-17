@@ -8,7 +8,23 @@ public class ApplicationDbContext : DbContext
     public DbSet<Fornecedor> Fornecedores { get; set; }
     public DbSet<Servico> Servicos { get; set; }
     public DbSet<Evento> Eventos { get; set; }
-    public DbSet<Evento> ParticipanteEvento { get; set; }
+    public DbSet<ParticipanteEvento> ParticipanteEvento { get; set; }
+
+    public DbSet<ServicoEvento> ServicoEvento { get; set; }
+    public DbSet<TipoEvento> TiposEvento { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // chave composta ParticipanteEvento
+        modelBuilder.Entity<ParticipanteEvento>()
+            .HasKey(pe => new { pe.EventoId, pe.ParticipanteId });
+
+        // chave composta ServicoEvento
+        modelBuilder.Entity<ServicoEvento>()
+            .HasKey(se => new { se.EventoId, se.ServicoId });
+    }
+
 
 
 
