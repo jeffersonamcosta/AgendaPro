@@ -7,7 +7,7 @@ namespace AgendaPro.Models
     {
         public int Id { get; set; }
 
-        [Required]
+       
         public string Nome { get; set; } = "Novo evento";
 
         public DateTime DataInicio { get; set; } = DateTime.Today;
@@ -20,7 +20,7 @@ namespace AgendaPro.Models
         public int CapacidadeMaxima { get; set; } = 0;
         public decimal OrcamentoMaximo { get; set; } = 0;
 
-        [Required]
+       
         public int TipoEventoId { get; set; } = 0;
 
         public bool Ativo { get; set; } = true;

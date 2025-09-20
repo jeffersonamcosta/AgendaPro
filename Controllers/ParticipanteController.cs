@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AgendaPro.Models;
 using Microsoft.AspNetCore.Authorization;
-using AgendaPro.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AgendaPro.Controllers
 {
@@ -110,5 +111,45 @@ namespace AgendaPro.Controllers
                 return StatusCode(500, $"Erro ao excluir participante: {ex.Message}");
             }
         }
+
+        // Post: api/participante/pesquisar
+        [HttpPost("pesquisar")]
+        public IActionResult Pesquisar([FromBody] Participante filtro)
+        {
+            try
+            {
+                var query = _db.Participante.AsQueryable();
+
+                // Nome
+                if (!string.IsNullOrEmpty(filtro.Nome))
+                    query = query.Where(p => p.Nome.Contains(filtro.Nome));
+
+                // Documento
+                if (!string.IsNullOrEmpty(filtro.Documento))
+                    query = query.Where(p => p.Documento.Contains( filtro.Documento));
+
+                if (!string.IsNullOrEmpty(filtro.Telefone))
+                    query = query.Where(p => p.Telefone.Contains(filtro.Telefone));
+
+                if (!string.IsNullOrEmpty(filtro.Email))
+                    query = query.Where(p => p.Email.Contains(filtro.Email));
+
+                if (filtro.TipoParticipanteId >0)
+                    query = query.Where(p => p.TipoParticipanteId==filtro.TipoParticipanteId);
+
+                if (filtro.Ativo == true || filtro.Ativo == false)
+                    query = query.Where(p => p.Ativo == filtro.Ativo);
+
+
+
+
+                return Ok(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao pesquisar participante: {ex.Message}");
+            }
+        }
+
     }
 }

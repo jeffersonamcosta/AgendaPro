@@ -6,10 +6,10 @@ namespace AgendaPro.Models
     {
         public int Id { get; set; }
 
-        [Required, StringLength(100)]
+        [ StringLength(100)]
         public string Nome { get; set; } = null!;
 
-        [Required, StringLength(11, MinimumLength = 11)]
+        
         public string Documento { get; set; } = null!; // CPF
 
         [StringLength(30)]

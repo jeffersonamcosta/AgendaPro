@@ -6,10 +6,10 @@ namespace AgendaPro.Models
     {
         public int Id { get; set; }
 
-        [Required, StringLength(200)]
+        [StringLength(200)]
         public string RazaoSocial { get; set; } = null!;
 
-        [Required, StringLength(14)]
+        
         public string CNPJ { get; set; } = null!;
 
         [StringLength(30)]

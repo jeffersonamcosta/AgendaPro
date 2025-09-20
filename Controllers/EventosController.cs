@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AgendaPro.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using AgendaPro.Models;
+using Microsoft.IdentityModel.Tokens;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -135,4 +136,83 @@ public class EventosController : ControllerBase
             return StatusCode(500, $"Erro ao buscar evento(s): {ex.Message}");
         }
     }
+
+    // Post: api/eventos/pesquisar
+    [HttpPost("pesquisar")]
+    public IActionResult Pesquisar([FromBody] EventoFiltro filtro)
+    {
+        try
+        {
+            var EventosQuery = _db.Eventos.AsQueryable();
+            var se = _db.Servicos.AsQueryable();
+            var pe = _db.ParticipanteEvento.AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(filtro.Nome))
+                EventosQuery = EventosQuery.Where(e => e.Nome.Contains(filtro.Nome));
+
+        
+            if (!string.IsNullOrEmpty(filtro.CEP))
+                EventosQuery = EventosQuery.Where(e => e.CEP.Contains(filtro.CEP));
+
+            if (!string.IsNullOrEmpty(filtro.Endereco))
+                EventosQuery = EventosQuery.Where(e => e.Endereco.Contains(filtro.Endereco));
+
+            if (filtro.OrcamentoMaximo>0)
+                EventosQuery = EventosQuery.Where(e => e.OrcamentoMaximo < (filtro.OrcamentoMaximo));
+
+            if (filtro.CapacidadeMaxima > 0)
+                EventosQuery = EventosQuery.Where(e => e.CapacidadeMaxima < (filtro.CapacidadeMaxima));
+
+            if (filtro.TipoEventoId > 0)
+                EventosQuery = EventosQuery.Where(e => e.TipoEventoId == (filtro.TipoEventoId));
+
+            if (filtro.Ativo == true || filtro.Ativo == false)
+                EventosQuery = EventosQuery.Where(e => e.Ativo == filtro.Ativo);
+
+
+            if (!string.IsNullOrEmpty(filtro.DataInicio.ToString()))
+            {
+                EventosQuery = EventosQuery.Where(e => e.DataInicio > (filtro.DataInicio));
+            }
+
+            if (!string.IsNullOrEmpty(filtro.DataFim.ToString()))
+            {
+                EventosQuery = EventosQuery.Where(e => e.DataFim < (filtro.DataFim));
+            }
+
+            var eventos = EventosQuery
+    .Select(e => new
+    {
+        e.Id,
+        e.Nome,
+        e.DataInicio,
+        e.DataFim,
+        e.CEP,
+        e.Endereco,
+        e.Observacoes,
+        e.CapacidadeMaxima,
+        e.OrcamentoMaximo,
+        e.TipoEventoId,
+        e.Ativo,
+        ParticipantesIds = _db.Set<ParticipanteEvento>()
+                           .Where(pe => pe.EventoId == e.Id)
+                           .Select(pe => pe.ParticipanteId)
+                           .ToList(),
+        EventoIds = _db.Set<ServicoEvento>()
+                          .Where(fe => fe.EventoId == e.Id)
+                          .Select(fe => fe.ServicoId)
+                          .ToList()
+    })
+    .ToList();
+
+
+            return Ok(eventos.ToList());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro ao pesquisar: {ex.Message}");
+        }
+    }
+
 }

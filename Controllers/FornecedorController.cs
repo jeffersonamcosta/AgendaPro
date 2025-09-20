@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AgendaPro.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AgendaPro.Controllers
 {
@@ -173,5 +174,53 @@ namespace AgendaPro.Controllers
                 return StatusCode(500, $"Erro ao excluir fornecedor: {ex.Message}");
             }
         }
+
+
+        // Post: api/fornecedor/pesquisar
+        [HttpPost("pesquisar")]
+        public IActionResult Pesquisar([FromBody] Fornecedor filtro)
+        {
+            try
+            {
+                var query = _db.Fornecedores.AsQueryable();
+
+                // Nome
+                if (!string.IsNullOrEmpty(filtro.RazaoSocial))
+                    query = query.Where(f => f.RazaoSocial.Contains(filtro.RazaoSocial));
+
+                // Documento
+                if (!string.IsNullOrEmpty(filtro.CNPJ))
+                    query = query.Where(f => f.CNPJ.Contains(filtro.CNPJ));
+
+                if (!string.IsNullOrEmpty(filtro.Telefone))
+                    query = query.Where(f => f.Telefone.Contains(filtro.Telefone));
+
+                if (!string.IsNullOrEmpty(filtro.Email))
+                    query = query.Where(f => f.Email.Contains(filtro.Email));
+
+                if (filtro.Ativo == true || filtro.Ativo == false)
+                    query = query.Where(f => f.Ativo == filtro.Ativo);
+
+                query = query.Select(f => new Fornecedor
+                {
+                    Id = f.Id,
+                    Ativo = f.Ativo,
+                    RazaoSocial = f.RazaoSocial,
+                    CNPJ = f.CNPJ,
+                    Telefone = f.Telefone,
+                    Email = f.Email,
+                    Servicos = _db.Servicos.Where(s => s.FornecedorId == f.Id && s.Ativo).ToList()
+
+                });
+
+
+                return Ok(query.ToList());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao pesquisar: {ex.Message}");
+            }
+        }
+
     }
 }
