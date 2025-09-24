@@ -79,8 +79,7 @@ namespace AgendaPro.Controllers
             try
             {
                 if (id != participante.Id) return BadRequest("ID não confere.");
-                if (!_db.Participante.Any(p => p.Id == id && p.Ativo)) return NotFound();
-
+                
                 _db.Entry(participante).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
 
@@ -99,7 +98,7 @@ namespace AgendaPro.Controllers
             try
             {
                 var participante = _db.Participante.Find(id);
-                if (participante == null || !participante.Ativo) return NotFound();
+         
 
                 participante.Ativo = false; // exclusão lógica
                 _db.SaveChanges();
@@ -150,6 +149,27 @@ namespace AgendaPro.Controllers
                 return StatusCode(500, $"Erro ao pesquisar participante: {ex.Message}");
             }
         }
+        // Post: api/participante/tipoparticipante
+        [HttpPost("tipoparticipante")]
+        public IActionResult BuscarTipos([FromBody] List<int> ids)
+        {
+            try
+            {
+
+
+                var tipos = _db.TipoParticipante
+                               .Where(t => ids.Contains(t.Id) && t.Ativo)
+                               .Select(t => t.Descricao)
+                               .ToList();
+
+                return Ok(tipos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao buscar tipos de participante: {ex.Message}");
+            }
+        }
+
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AgendaPro.Models
 {
@@ -19,7 +20,7 @@ namespace AgendaPro.Models
         public string? Email { get; set; } = null!;
 
         public bool Ativo { get; set; } = true;
-
+        [NotMapped]
         public List<Servico> Servicos { get; set; } = new();
     }
 }

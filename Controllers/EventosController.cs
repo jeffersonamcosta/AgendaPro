@@ -1,6 +1,7 @@
 ﻿using AgendaPro.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 [ApiController]
@@ -119,7 +120,7 @@ public class EventosController : ControllerBase
                                        .Where(pe => pe.EventoId == e.Id)
                                        .Select(pe => pe.ParticipanteId)
                                        .ToList(),
-                    Evento = _db.Set<ServicoEvento>()
+                    Servico = _db.Set<ServicoEvento>()
                                       .Where(fe => fe.EventoId == e.Id)
                                       .Select(fe => fe.ServicoId)
                                       .ToList()
@@ -181,6 +182,15 @@ public class EventosController : ControllerBase
                 EventosQuery = EventosQuery.Where(e => e.DataFim < (filtro.DataFim));
             }
 
+            
+            if (filtro.ParticipantesIds != null && filtro.ParticipantesIds.Any())
+            {
+                EventosQuery = from e in EventosQuery
+                               where filtro.ParticipantesIds.All(pid => pe.Any(pe => pe.EventoId == e.Id && pe.ParticipanteId == pid))
+                               select e;
+            }
+
+
             var eventos = EventosQuery
     .Select(e => new
     {
@@ -199,7 +209,7 @@ public class EventosController : ControllerBase
                            .Where(pe => pe.EventoId == e.Id)
                            .Select(pe => pe.ParticipanteId)
                            .ToList(),
-        EventoIds = _db.Set<ServicoEvento>()
+         ServicosIds = _db.Set<ServicoEvento>()
                           .Where(fe => fe.EventoId == e.Id)
                           .Select(fe => fe.ServicoId)
                           .ToList()
@@ -214,5 +224,94 @@ public class EventosController : ControllerBase
             return StatusCode(500, $"Erro ao pesquisar: {ex.Message}");
         }
     }
+
+    // PUT: api/evento/atualiza/{id}
+    [HttpPut("atualiza/{id}")]
+    public IActionResult Atualizar(int id, [FromBody] Evento evento)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Busca o evento existente
+            var eventoExistente = _db.Eventos.FirstOrDefault(e => e.Id == id);
+
+            if (eventoExistente == null)
+                return NotFound($"Evento com Id {id} não encontrado.");
+
+            // Atualiza campos básicos
+            eventoExistente.Nome = evento.Nome;
+            eventoExistente.Observacoes = evento.Observacoes;
+            eventoExistente.CEP = evento.CEP;
+            eventoExistente.Endereco = evento.Endereco;
+            eventoExistente.DataInicio = evento.DataInicio;
+            eventoExistente.DataFim = evento.DataFim;
+            eventoExistente.CapacidadeMaxima = evento.CapacidadeMaxima;
+            eventoExistente.OrcamentoMaximo = evento.OrcamentoMaximo;
+            eventoExistente.TipoEventoId = evento.TipoEventoId;
+            eventoExistente.Ativo = evento.Ativo;
+
+            // Materializa os relacionamentos antes de remover
+            var participantesAtuais = _db.Set<ParticipanteEvento>()
+                                         .Where(pe => pe.EventoId == id)
+                                         .ToList();
+            _db.Set<ParticipanteEvento>().RemoveRange(participantesAtuais);
+
+            var servicosAtuais = _db.Set<ServicoEvento>()
+                                     .Where(se => se.EventoId == id)
+                                     .ToList();
+            _db.Set<ServicoEvento>().RemoveRange(servicosAtuais);
+
+            // Adiciona novos participantes se houver
+            var participantesIds = evento.ParticipantesIds ?? new List<int>();
+            if (participantesIds.Any())
+            {
+                // Valida participantes ativos
+                var validos = _db.Participante
+                                 .Where(p => participantesIds.Contains(p.Id) && p.Ativo)
+                                 .Select(p => p.Id)
+                                 .ToList();
+                foreach (var pid in validos)
+                {
+                    _db.Set<ParticipanteEvento>().Add(new ParticipanteEvento
+                    {
+                        EventoId = id,
+                        ParticipanteId = pid
+                    });
+                }
+            }
+
+            // Adiciona novos serviços se houver
+            var servicosIds = evento.ServicosIds ?? new List<int>();
+            if (servicosIds.Any())
+            {
+                // Valida serviços ativos
+                var validos = _db.Servicos
+                                 .Where(s => servicosIds.Contains(s.Id) && s.Ativo)
+                                 .Select(s => s.Id)
+                                 .ToList();
+                foreach (var sid in validos)
+                {
+                    _db.Set<ServicoEvento>().Add(new ServicoEvento
+                    {
+                        EventoId = id,
+                        ServicoId = sid
+                    });
+                }
+            }
+
+            _db.SaveChanges();
+
+            return NoContent();
+
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro ao atualizar Evento: {ex.Message}");
+        }
+    }
+
+
 
 }

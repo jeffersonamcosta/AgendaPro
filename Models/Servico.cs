@@ -8,10 +8,10 @@ namespace AgendaPro.Models
     {
         public int Id { get; set; }
 
-        [Required]
+ 
         public int FornecedorId { get; set; }
 
-        [Required, StringLength(200)]
+        [ StringLength(200)]
         public string Nome { get; set; } = null!;
 
         public decimal Preco { get; set; } = 0;

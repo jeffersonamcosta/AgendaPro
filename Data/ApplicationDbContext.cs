@@ -11,7 +11,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ParticipanteEvento> ParticipanteEvento { get; set; }
 
     public DbSet<ServicoEvento> ServicoEvento { get; set; }
-    public DbSet<TipoEvento> TiposEvento { get; set; }
+    public DbSet<TiposEvento> TiposEvento { get; set; }
+    public DbSet<TipoParticipante> TipoParticipante { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

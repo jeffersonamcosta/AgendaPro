@@ -49,7 +49,7 @@ namespace AgendaPro.Controllers
 
         // POST: api/tipoevento/novo
         [HttpPost("novo")]
-        public IActionResult Criar([FromBody] TipoEvento tipoEvento)
+        public IActionResult Criar([FromBody] TiposEvento tipoEvento)
         {
             try
             {
@@ -68,14 +68,13 @@ namespace AgendaPro.Controllers
 
         // PUT: api/tipoevento/atualiza/{id}
         [HttpPut("atualiza/{id}")]
-        public IActionResult Atualizar(int id, [FromBody] TipoEvento tipoEvento)
+        public IActionResult Atualizar(int id, [FromBody] TiposEvento TipoEvento)
         {
             try
             {
-                if (id != tipoEvento.Id) return BadRequest("ID não confere.");
-                if (!_db.TiposEvento.Any(t => t.Id == id && t.Ativo)) return NotFound();
+                if (id != TipoEvento.Id) return BadRequest("ID não confere.");              
 
-                _db.Entry(tipoEvento).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _db.Entry(TipoEvento).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
 
                 return NoContent();
@@ -93,8 +92,6 @@ namespace AgendaPro.Controllers
             try
             {
                 var tipo = _db.TiposEvento.Find(id);
-                if (tipo == null || !tipo.Ativo) return NotFound();
-
                 tipo.Ativo = false;
                 _db.SaveChanges();
 

@@ -23,8 +23,7 @@ namespace AgendaPro.Controllers
         {
             try
             {
-                if (!ModelState.IsValid) return BadRequest(ModelState);
-
+              
                 var servicos = fornecedor.Servicos?.ToList() ?? new List<Servico>(); 
                 fornecedor.Servicos = new List<Servico>(); 
                 _db.Fornecedores.Add(fornecedor);
@@ -132,13 +131,14 @@ namespace AgendaPro.Controllers
         {
             try
             {
-                var fornecedor = _db.Fornecedores.Find(id);
-                if (fornecedor == null || !fornecedor.Ativo) return NotFound();
+                var fornecedor = _db.Fornecedores.Find(id);              
 
+                fornecedor.Id = fornecedorAtualizado.Id;
                 fornecedor.RazaoSocial = fornecedorAtualizado.RazaoSocial;
                 fornecedor.CNPJ = fornecedorAtualizado.CNPJ;
                 fornecedor.Telefone = fornecedorAtualizado.Telefone;
                 fornecedor.Email = fornecedorAtualizado.Email;
+                fornecedor.Ativo = fornecedorAtualizado.Ativo;
 
                 _db.SaveChanges();
 

@@ -28,4 +28,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Controllers\TipoEventoController.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>
