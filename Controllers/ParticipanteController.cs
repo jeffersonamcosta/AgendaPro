@@ -149,19 +149,18 @@ namespace AgendaPro.Controllers
                 return StatusCode(500, $"Erro ao pesquisar participante: {ex.Message}");
             }
         }
-        // Post: api/participante/tipoparticipante
-        [HttpPost("tipoparticipante")]
-        public IActionResult BuscarTipos([FromBody] List<int> ids)
+        // Get: api/participante/tipoparticipantes
+        [HttpGet("tipoparticipante")]
+        public IActionResult BuscarTipos()
         {
             try
             {
 
 
                 var tipos = _db.TipoParticipante
-                               .Where(t => ids.Contains(t.Id) && t.Ativo)
-                               .Select(t => t.Descricao)
+                               .Where(t =>  t.Ativo)                          
                                .ToList();
-
+                
                 return Ok(tipos);
             }
             catch (Exception ex)
