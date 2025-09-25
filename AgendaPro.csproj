@@ -8,6 +8,7 @@
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0</ContainerBaseImage>
     <UserSecretsId>638933a7-b825-4add-be40-660191917707</UserSecretsId>
     <DockerfileContext>.</DockerfileContext>
+    <ApplicationIcon>AgendaPro.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <ContainerPort Include="8081" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AgendaPro.ico" />
   </ItemGroup>
 
   <ItemGroup>
